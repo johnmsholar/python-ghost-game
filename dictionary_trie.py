@@ -18,28 +18,24 @@ class Dictionary_Trie:
         # Having serious issues here.
         current_node = self.root
         for letter in word:
-            print letter
-            print 'Current node letter: ', current_node.letter
-            print 'Current node children: ', current_node.children
             if not current_node.has_child(letter):
-                current_node.add_child(Node(letter))
-                print 'Child ', letter, 'added to node', current_node
-            print 'Current node: ', current_node
+                new_child = Node(letter)
+                current_node.add_child(new_child)
             current_node = current_node.get_child(letter)
-            print current_node
-        current_node.isWord = True
+        current_node.is_word = True
 
     def contains_word(self, word):
         pass
 
-    def print_all_words(self, MAX_RECURSIVE_DEPTH=10):
-        self.root.print_all_words_recursive('', MAX_RECURSIVE_DEPTH)
+    def print_all_words(self, MAX_RECURSIVE_DEPTH=10, ordered=False):
+        self.root.print_all_words_recursive('', MAX_RECURSIVE_DEPTH, ordered)
+
  
 class Node:
-    def __init__(self, letter='', isWord=False, children=set()):
+    def __init__(self, letter=''):
         self.letter = letter
-        self.isWord = isWord
-        self.children = children
+        self.is_word = False
+        self.children = set()
 
     def add_child(self, node):
         self.children.add(node)
@@ -57,21 +53,15 @@ class Node:
     def remove_child(self, node):
         self.children.remove(node)
 
-    def print_all_words_recursive(self, word, MAX_RECURSIVE_DEPTH):
-        print 'Recursive Depth: ', len(word)
-        print word
+    def print_all_words_recursive(self, word, MAX_RECURSIVE_DEPTH, ordered=False):
         if len(word) >= MAX_RECURSIVE_DEPTH:
             return None
         word += self.letter
-        if self.isWord:
+        if self.is_word:
             print word
-        for child in self.children:
-            child.print_all_words_recursive(word, MAX_RECURSIVE_DEPTH)
-
-trie = Dictionary_Trie()
-trie.add_word('banana')
-print [child.letter for child in trie.root.children]
-# trie.print_all_words()
-#trie.set_dictionary('dictionary.txt')
-# trie.print_all_words()
-#trie.print_all_words(10)
+        if ordered:
+            for child in sorted([child for child in self.children]):
+                child.print_all_words_recursive(word, MAX_RECURSIVE_DEPTH, ordered)
+        else:
+            for child in self.children:
+                    child.print_all_words_recursive(word, MAX_RECURSIVE_DEPTH, ordered)
