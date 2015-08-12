@@ -3,17 +3,62 @@ from dictionary_trie import Dictionary_Trie, Node
 class Ghost_Trie(Dictionary_Trie):
     
     def __init__(self, dictionary=None, min_word_length = 4):
-        Dictionary_Trie.__init__(self, dictionary)
-        # super(self.__class__, self).__init__(dictionary)
+        self.root = Ghost_Node()
+        if dictionary:
+            self.set_dictionary(dictionary)
         self.min_word_length = min_word_length
-        self._prune_for_ghost()
+        self.prune_for_ghost()
+        self.set_is_winning()
 
-    def _prune_for_ghost(self):
-        self._recursive_prune_for_ghost(self.root, 0)
+    # Overrides add_word to use Ghost_Node instead of Node
+    def add_word(self, word):
+        current_node = self.root
+        for letter in word:
+            if not current_node.has_child(letter):
+                new_child = Ghost_Node(letter)
+                current_node.add_child(new_child)
+            current_node = current_node.get_child(letter)
+        current_node.is_word = True
 
-    def _recursive_prune_for_ghost(self, node, depth):
-        if depth >= self.min_word_length and node.is_word:
-            node.children = set()
+    def prune_for_ghost(self):
+        self.root.recursive_prune_for_ghost(0, self.min_word_length)
+
+    def set_is_winning(self):
+        self.root.recursive_set_is_winning()
+
+    def print_all_winning_words(self):
+        self.root.recursive_print_all_winning_words('')
+
+class Ghost_Node(Node):
+    def __init__(self, letter=''):
+        Node.__init__(self, letter)
+        self.is_winning = None
+
+    def recursive_prune_for_ghost(self, depth, MIN_WORD_LENGTH):
+        if depth >= MIN_WORD_LENGTH and self.is_word:
+            self.children = set()
             return None
-        for child in node.children:
-            self._recursive_prune_for_ghost(child, depth+1)
+        if self.is_word and depth < MIN_WORD_LENGTH:
+            self.is_word = False
+        for child in self.children:
+            child.recursive_prune_for_ghost(depth + 1, MIN_WORD_LENGTH)
+
+    def recursive_set_is_winning(self):
+        if self.is_word:
+            self.is_winning = True
+            return
+        else:
+            for child in self.children:
+                child.recursive_set_is_winning()
+        # If there is at least one losing child
+        if [child for child in self.children if not child.is_winning]:
+            self.is_winning = True
+        else:
+            self.is_winning = False
+
+    def recursive_print_all_winning_words(self, word):
+        if self.is_word:
+            print word
+        for child in self.children:
+            if (child.is_winning or child.is_word):
+                child.recursive_print_all_winning_words(word+child.letter)

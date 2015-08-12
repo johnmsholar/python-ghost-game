@@ -15,7 +15,6 @@ class Dictionary_Trie:
         f.close()
 
     def add_word(self, word):
-        # Having serious issues here.
         current_node = self.root
         for letter in word:
             if not current_node.has_child(letter):
@@ -24,8 +23,19 @@ class Dictionary_Trie:
             current_node = current_node.get_child(letter)
         current_node.is_word = True
 
+    def get_prefix(self, prefix):
+        current_node = self.root
+        for letter in prefix:
+            if not current_node.has_child(letter):
+                return None
+            current_node = current_node.get_child(letter)
+        return current_node
+
     def contains_word(self, word):
-        pass
+        prefix = self.get_prefix(word)
+        if prefix and prefix.is_word:
+            return True
+        return False
 
     def print_all_words(self, MAX_RECURSIVE_DEPTH=10, ordered=False):
         self.root.print_all_words_recursive('', MAX_RECURSIVE_DEPTH, ordered)
