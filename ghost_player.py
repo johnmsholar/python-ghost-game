@@ -1,7 +1,7 @@
 from ghost_trie import Ghost_Trie
 import random
 
-class Player:
+class GhostBot:
     def __init__(self, dictionary):
         self.dictionary = Ghost_Trie(dictionary)
 
@@ -13,3 +13,10 @@ class Player:
             return random.sample(current_node.children, 1)[0].letter
         else:
             return random.sample([child for child in current_node.children if not child.is_winning], 1)[0].letter
+
+class Human:
+    def __init__(self, name):
+        if name == '':
+            self.name = 'Holly'
+        else:
+            self.name = name
