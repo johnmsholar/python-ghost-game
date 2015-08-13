@@ -31,11 +31,14 @@ class Dictionary_Trie:
             current_node = current_node.get_child(letter)
         return current_node
 
-    def contains_word(self, word):
+    def contains(self, word):
         prefix = self.get_prefix(word)
         if prefix and prefix.is_word:
             return True
         return False
+
+    def contains_prefix(self, prefix):
+        return (get_prefix(prefix) != None)
 
     def print_all_words(self, MAX_RECURSIVE_DEPTH=10, ordered=False):
         self.root.print_all_words_recursive('', MAX_RECURSIVE_DEPTH, ordered)
