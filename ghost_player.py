@@ -10,8 +10,14 @@ class Player:
     def get_letters(self):
         return end_word[0:self.letter_count]
 
-class GhostBot:
+    def lose(self):
+        self.letter_count += 1
+
+    # EVERY PLAYER MUST IMPLEMENT THE MOVE METHOD
+
+class GhostBot(Player):
     def __init__(self, dictionary):
+        Player.__init__(self)
         self.dictionary = Ghost_Trie(dictionary)
         self.letters = 
 
@@ -28,6 +34,27 @@ class GhostBot:
     def knows_word(self, word):
         return self.dictionary.contains(word)
 
-class Human:
+    # TODO: Need to implement MOVE
+
+class Human(Player):
     def __init__(self, name='Holly'):
+        Player.__init__(self)
         self.name = name
+
+    def move(self, word):
+        move = ''
+        while not _verify_letter(move):
+            move = raw_input('It\'s your move, ' + self.name + '! What letter will you play? ')
+        return move
+
+    def _verify_letter(letter):
+        if letter == '':
+            return False
+        if len(letter) > 1:
+            print 'Enter a single letter.'
+            return False
+        try:
+            return (letter.lower() in [chr(num) for num in range(ord('a'), ord('a') + 26)])
+        except AttributeError as error:
+            print 'Invalid input. Enter a single letter.'
+            return False

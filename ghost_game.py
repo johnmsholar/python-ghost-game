@@ -2,101 +2,109 @@ from dictionary_trie import Dictionary_Trie
 from ghost_player import GhostBot, Human
 from time import time, sleep
 
-human = None
-ghostBot = None
-word = ''
-definitive_dictionary = Dictionary_Trie('dictionary.txt')
-
-def introduction():
-    global human
-    print 'Let\'s play GHOST!'
-    name = raw_input('But first... what\'s your name?\n')
-    human = Human(name)
-    print 'Hello there, ' + human.name + '! It\'s a pleasure to make your acquaintance.'
-
-def select_opponent():
-    global ghostBot
+class Match():
     opponents = ['1. Timmy (Vocabulary: 1000 Most Common English Words)',
                 '2. Larry (Vocabulary: 10000 Most Common English Words as curated by Google)',
                 '3. Sergey (Vocabulary: 20000 Most Common English Words as curated by Google)',
-                '4. HAL (Vocabulary: UNIX Dictionary - 127142 Words of Pure Destructive Capability)']
+                '4. HAL (Vocabulary: UNIX Dictionary - 127142 Words of Pure Pain)']
     dictionaries = ['oneThousandMostCommonWords.txt',
                 'tenThousandMostCommonWords.txt',
                 'twentyThousandMostCommonWords.txt',
                 'dictionary.txt']
-    opponent_selection = ''
-    while not verify_opponent_selection(opponent_selection, opponents):
-        opponent_selection = raw_input('Choose an opponent!\n' + reduce(lambda x, y: x+y, [('\t' + opponent + '\n') for opponent in opponents]))
-    num_selection = int(opponent_selection) - 1
-    ghostBot = GhostBot(dictionaries[num_selection])
+    # TODO: should probably add a rules description here
 
-def verify_opponent_selection(opponent_selection, opponents):
-    if opponent_selection == '':
-        return False
-    try:
-        num_selection = int(opponent_selection) - 1
-        if num_selection not in range(len(opponents)):
-            print 'That\'s not a valid number.'
+    def __init__(self):
+        self.introduce()
+        self.definitive_dictionary = Dictionary_Trie('dictionary.txt')
+        self.create_player_character()
+        self.create_ghost_bot()
+        self.rounds_played = 0
+        while self.human.letter_count < len(self.human.end_word) and self.ghost_bot.letter_count < len(self.ghost_bot.end_word):
+            human_goes_first = (rounds_played % 2 == 0)
+            self.active_round = Round(self.definitive_dictionary, self.human, self.ghost_bot, human_goes_first)
+            self.active_round.play_to_completion() # or something to that effect
+
+    def introduce(self):
+        print 'Let\'s play GHOST!'
+
+    def create_player_character(self):
+        name = raw_input('But first... what\'s your name?\n')
+        self.human = Human(name)
+        print 'Hello there, ' + human.name + '! It\'s a pleasure to make your acquaintance.'
+
+    def create_ghost_bot(self):
+        self.ghost_bot = GhostBot(self.dictionaries[self.select_opponent()])
+
+    def select_opponent(self):
+        opponent_selection = ''
+        while not self._verify_opponent_selection(opponent_selection, opponents):
+            opponent_selection = raw_input('Choose an opponent!\n' + reduce(lambda x, y: x+y, [('\t' + opponent + '\n') for opponent in opponents]))
+        return int(opponent_selection) - 1
+
+    def _verify_opponent_selection(self, opponent_selection, opponents):
+        if opponent_selection == '':
             return False
+        try:
+            num_selection = int(opponent_selection) - 1
+            if num_selection not in range(len(opponents)):
+                print 'That\'s not a valid number.'
+                return False
+            else:
+                return True
+        except ValueError as error:
+            print 'I don\'t understand that input.'
+            return False
+
+# TODO: Extend the round class to support two arbitrary players, rather than a human and a ghost_bot
+# I don't think I'll extend to support more than 2 players. It seems to spit in the face of the game.
+class Round():
+    def __init__(self, definitive_dictionary, human, ghost_bot, human_goes_first):
+        self.word = ''
+        self.definitive_dictionary = definitive_dictionary
+        self.human = human
+        self.ghost_bot = ghost_bot
+        if human_goes_first:
+            self.active_player = self.human
+            self.inactive_player = self.ghost_bot
         else:
+            self.active_player = self.ghost_bot
+            self.inactive_player = self.human
+
+    def play_to_completion(self):
+        self.begin()
+
+    # Should player be able to call other player out after every word? e.g. 'That's a word!'
+    def play_single_move(self):
+        self.word += self.active_player.move(self.word)
+        # Evaluate if game is over???
+        self.active_player, self.inactive_player = self.inactive_player, self.active_player # Swap active and inactive players
+
+    def player_move(self):
+        move = ''
+        while not verify_human_letter(move):
+            move = raw_input('It\'s your move! What letter will you play? ')
+        self.word += move.lower()
+        if self.definitive_dictionary.contains(self.word)
+            lose()
             return True
-    except ValueError as error:
-        print 'I don\'t understand that input.'
         return False
 
-def begin_game():
-    print 'Let\'s begin!'
-    first_or_second = ''
-    while not verify_first_or_second(first_or_second):
-        first_or_second = raw_input('Would you like to go first (1) or second (2)? ')
-    if first_or_second == '1':
-        play(is_player_turn=True)
-    if first_or_second == '2':
-        play(is_player_turn=False)
-
-def verify_first_or_second(selection):
-    if selection == '':
-        return False
-    if not (selection == '1' or selection == '2'):
-        print 'That\'s not a valid choice.'
-        return False
-    else:
-        return True
-
-def player_move():
-    global word
-    move = ''
-    while not verify_human_letter(move):
-        move = raw_input('It\'s your move! What letter will you play? ')
-    word += move.lower()
-    if ghostBot.dictionary.contains(word):
-        lose()
-        return True
-    return False
-
-def ghostBot_move():
-    global word
-    move = ghostBot.play(word)
-    if move == None:
-        print 'I don\'t know that word!'
-        win()
-    print 'I play...', move
-    word += move.lower()
-    if ghostBot.dictionary.contains(word):
-        win()
-        return True
-    return False
-
-def verify_human_letter(letter):
-    if letter == '':
-        return False
-    if len(letter) > 1:
-        print 'Enter a single letter.'
-        return False
-    try:
-        return (letter.lower() in [chr(num) for num in range(ord('a'), ord('a') + 26)])
-    except AttributeError as error:
-        print 'Invalid input. Enter a single letter.'
+    def ghostBot_move():
+        move = ghostBot.play(self.word)
+        if move == None:
+            print 'I don\'t think you\'re moving towards an English word!'
+            print 'But if you can tell me a word that starts with ' + self.word + ' then you win!'
+            target = raw_input('What word were you thinking of? ')
+            if self.definitive_dictionary.contains(target) and target.lower().startswith(self.word):
+                print 'Wow! You got me! You win!'
+            else:
+                print 'That word isn\'t in the definitive dictionary. You lose!'
+            # Handle here
+            win()
+        print 'I play...', move
+        word += move.lower()
+        if self.definitive_dictionary.contains(self.word)
+            return True
         return False
 
 def play(is_player_turn):
