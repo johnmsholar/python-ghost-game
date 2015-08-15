@@ -1,8 +1,10 @@
 from ghost_trie import Ghost_Trie
+from ghost_exceptions import CallBluffException
 import random
 
 class Player:
     end_word = ['G', 'H', 'O', 'S', 'T']
+    actions = ['move', 'call_bluff', 'help', 'quit']
 
     def __init__(self):
         self.letter_count = 0
@@ -13,13 +15,40 @@ class Player:
     def lose(self):
         self.letter_count += 1
 
-    # EVERY PLAYER MUST IMPLEMENT THE MOVE METHOD
+    # Every player must implement the following methods:
+    # select action - returns a reference to a method which will be called as a move
+    # play letter - returns a letter move
+    # call bluff - calls the bluff of the other player on input move
+    # quit - quits the game
 
 class GhostBot(Player):
     def __init__(self, dictionary):
         Player.__init__(self)
         self.dictionary = Ghost_Trie(dictionary)
-        self.letters = 
+
+    def choose_action(self, word):
+        move = self.play(self.word)
+        if move == None:
+            return self.call_bluff
+        else:
+            return self.play_letter
+
+    def play_letter(self, word):
+        move = self.play(self.word)
+        print 'I play...', move
+        return move.lower()
+
+    # Returns True for a successful call and False otherwise.
+    def call_bluff(self, opponent, word, definitive_dictionary):
+        print 'I don\'t think you\'re moving towards an English word!'
+        print 'But if you can tell me a word that starts with ' + self.word + ' then you win!'
+        target = raw_input('What word were you thinking of? ')
+        if self.definitive_dictionary.contains(target) and target.lower().startswith(self.word):
+            print 'Wow! You got me! You win!'
+            return False
+        else:
+            print 'That word isn\'t in the definitive dictionary. You lose!'
+            return True
 
     def play(self, prefix):
         current_node = self.dictionary.get_prefix(prefix)
@@ -41,7 +70,7 @@ class Human(Player):
         Player.__init__(self)
         self.name = name
 
-    def move(self, word):
+    def play_letter(self, word):
         move = ''
         while not _verify_letter(move):
             move = raw_input('It\'s your move, ' + self.name + '! What letter will you play? ')
@@ -58,3 +87,5 @@ class Human(Player):
         except AttributeError as error:
             print 'Invalid input. Enter a single letter.'
             return False
+
+    def 

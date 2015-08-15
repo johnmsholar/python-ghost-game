@@ -58,26 +58,43 @@ class Match():
 # TODO: Extend the round class to support two arbitrary players, rather than a human and a ghost_bot
 # I don't think I'll extend to support more than 2 players. It seems to spit in the face of the game.
 class Round():
-    def __init__(self, definitive_dictionary, human, ghost_bot, human_goes_first):
+    def __init__(self, definitive_dictionary, player_1, player_2, player_1_goes_first):
         self.word = ''
         self.definitive_dictionary = definitive_dictionary
-        self.human = human
-        self.ghost_bot = ghost_bot
-        if human_goes_first:
-            self.active_player = self.human
-            self.inactive_player = self.ghost_bot
+        self.player_1 = player_1
+        self.player_2 = player_2
+        if player_1_goes_first:
+            self.active_player = self.player_1
+            self.inactive_player = self.player_2
         else:
-            self.active_player = self.ghost_bot
-            self.inactive_player = self.human
+            self.active_player = self.player_2
+            self.inactive_player = self.player_1
 
     def play_to_completion(self):
         self.begin()
 
-    # Should player be able to call other player out after every word? e.g. 'That's a word!'
+    # Should player be able to call other player out after every word? e.g. 'That's not a word!'
+    # Probably going to go with the exception implementation.
     def play_single_move(self):
-        self.word += self.active_player.move(self.word)
+        """
+        action = self.active_player.choose_action(word)
+        if action.__name__ == 'call_bluff':
+            self.handle_bluff_call()
+        elif action.__name__ == 'help':
+            self.active_player.help()
+        """
+        try:
+            self.word += self.active_player.move(self.word)
+        except CallBluffException:
+            self.active_player.call_bluff(self.inactive_player, self.word)
+        except HelpException:
+            self.active_player.help()
+            self.word += self.active_player.move(self.word)
         # Evaluate if game is over???
         self.active_player, self.inactive_player = self.inactive_player, self.active_player # Swap active and inactive players
+
+    def handle_bluff_call(self):
+
 
     def player_move(self):
         move = ''
