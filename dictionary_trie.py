@@ -66,15 +66,17 @@ class Node:
     def remove_child(self, node):
         self.children.remove(node)
 
-    def print_all_words_recursive(self, word, MAX_RECURSIVE_DEPTH, ordered=False):
+    def get_all_words_recursive(self, word, MAX_RECURSIVE_DEPTH, ordered=False):
+        result = set()
         if len(word) >= MAX_RECURSIVE_DEPTH:
             return None
         word += self.letter
         if self.is_word:
-            print word
+            result.add(word)
         if ordered:
             for child in sorted([child for child in self.children]):
-                child.print_all_words_recursive(word, MAX_RECURSIVE_DEPTH, ordered)
+                result = result.union(child.get_all_words_recursive(word, MAX_RECURSIVE_DEPTH, ordered))
         else:
             for child in self.children:
-                    child.print_all_words_recursive(word, MAX_RECURSIVE_DEPTH, ordered)
+                result = result.union(child.print_all_words_recursive(word, MAX_RECURSIVE_DEPTH, ordered))
+        return result

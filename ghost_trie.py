@@ -1,4 +1,5 @@
 from dictionary_trie import Dictionary_Trie, Node
+import random
 
 class Ghost_Trie(Dictionary_Trie):
     
@@ -28,6 +29,14 @@ class Ghost_Trie(Dictionary_Trie):
 
     def print_all_winning_words(self):
         self.root.recursive_print_all_winning_words('')
+
+    def get_word_that_starts_with(self, prefix):
+        if not self.dictionary.contains_prefix(prefix):
+            return None
+        else:
+            active_node = self.get_prefix(prefix)
+            choices = active_node.get_all_words_recursive(prefix, MAXIMUM_RECURSIVE_DEPTH=15, ordered=False)
+            return choices[random.randrange(len(choices))]
 
 class Ghost_Node(Node):
     def __init__(self, letter=''):
