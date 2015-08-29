@@ -31,11 +31,13 @@ class Ghost_Trie(Dictionary_Trie):
         self.root.recursive_print_all_winning_words('')
 
     def get_word_that_starts_with(self, prefix):
-        if not self.dictionary.contains_prefix(prefix):
+        if not self.contains_prefix(prefix):
             return None
         else:
             active_node = self.get_prefix(prefix)
-            choices = active_node.get_all_words_recursive(prefix, MAXIMUM_RECURSIVE_DEPTH=15, ordered=False)
+            choices = active_node.get_all_words_recursive(prefix, MAX_RECURSIVE_DEPTH=15, ordered=False)
+            if len(choices) == 0:
+                return None
             return choices[random.randrange(len(choices))]
 
 class Ghost_Node(Node):

@@ -12,7 +12,18 @@ class Match():
                 'tenThousandMostCommonWords.txt',
                 'twentyThousandMostCommonWords.txt',
                 'dictionary.txt']
-    # TODO: should probably add a rules description here
+    rules_text = 'Here\'s how it works:\n' + \
+                        'In a game of GHOST, two players alternate saying letters, which are concatenated as play continues.\n' + \
+                        'If a player completes a word, that player loses the game.\n' + \
+                        'When it is your turn, you have three options:\n' + \
+                        '\t1: Play a letter to be concatenated to the end of the current string.\n' + \
+                        '\t\t(Do this in gameplay by entering a single letter.)\n' + \
+                        '\t2: Call the bluff of the other player. If you think the other player is not moving towards a word,\n' + \
+                        '\tyou may assert this. (Do this in gameplay by typing \'call bluff\').\n' + \
+                        '\t\tCalling Bluff (Taking Your Opponent to the Book, \"Invoking Webster\", etc...):\n' + \
+                        '\t\t\tIf you call the bluff of the other player, and they can provide a word in the dictionary\n' + \
+                        '\t\t\t which starts with the current prefix, you lose. If they cannot, they lose!\n' + \
+                        '\t3: You may ask for help at any time by typing \'help\'\n'
 
     def __init__(self):
         self.introduce()
@@ -27,6 +38,10 @@ class Match():
 
     def introduce(self):
         print 'Let\'s play GHOST!'
+        if raw_input('Would you like to know how? (y/n) ').lower().startswith('y'):
+            print Match.rules_text
+        else:
+            print 'Already a pro, huh? Let\'s play!'
 
     def create_player_character(self):
         name = raw_input('But first... what\'s your name?\n')
@@ -34,7 +49,7 @@ class Match():
         print 'Hello there, ' + self.human.name + '! It\'s a pleasure to make your acquaintance.'
 
     def create_ghost_bot(self):
-        self.ghost_bot = GhostBot(self.dictionaries[self.select_opponent()])
+        self.ghost_bot = GhostBot(self.dictionaries[self.select_opponent()], 'BOT')
 
     def select_opponent(self):
         opponent_selection = ''
@@ -86,7 +101,7 @@ class Round():
             self.word += self.active_player.play_letter(self.word)
         except CallBluffException:
             self.handle_bluff_call()
-            raise EndRoundExceptiont
+            raise EndRoundException
         except HelpException:
             self.active_player.help()
             self.word += self.active_player.play_letter(self.word)

@@ -6,16 +6,18 @@ class Player:
     end_word = ['G', 'H', 'O', 'S', 'T']
     actions = ['move', 'call_bluff', 'help', 'quit']
 
-    def __init__(self):
+    def __init__(self, name):
         self.letter_count = 0
+        self.name = name
 
     def get_letters(self):
         return end_word[0:self.letter_count]
 
     def win(self):
-        pass
+        print self.name + ' wins!'
 
     def lose(self):
+        print self.name + ' loses!'
         self.letter_count += 1
 
     # Every player must implement the following methods:
@@ -25,8 +27,8 @@ class Player:
     # quit - quits the game
 
 class GhostBot(Player):
-    def __init__(self, dictionary):
-        Player.__init__(self)
+    def __init__(self, dictionary, name):
+        Player.__init__(self, name)
         self.dictionary = Ghost_Trie(dictionary)
 
     def play_letter(self, word):
@@ -42,7 +44,7 @@ class GhostBot(Player):
         print 'I don\'t think you\'re moving towards an English word!'
         print 'But if you can tell me a word that starts with ' + word + ' then you win!'
         target = opponent.respond_to_bluff_call(word)
-        if self.definitive_dictionary.contains(target) and target.lower().startswith(word):
+        if definitive_dictionary.contains(target) and target.lower().startswith(word):
             print 'Wow! You got me! You win!'
             return False
         else:
@@ -65,12 +67,6 @@ class GhostBot(Player):
     def knows_word(self, word):
         return self.dictionary.contains(word)
 
-    def win(self):
-        super(GhostBot, self).win()
-
-    def lose(self):
-        super(GhostBot, self).lose()
-
 class Human(Player):
     help_string =   ('At this stage in the game, you have three options: \n' + 
                     '1. Play a letter - enter a single letter to respond to your opponent\'s move. \n' + 
@@ -79,7 +75,7 @@ class Human(Player):
                     '3. Help - enter "help" to ask for help.')
 
     def __init__(self, name='Holly'):
-        Player.__init__(self)
+        Player.__init__(self, name)
         self.name = name
 
     def play_letter(self, word):
@@ -116,11 +112,3 @@ class Human(Player):
 
     def help(self):
         print Human.help_string
-
-    def win(self):
-        super(Human, self).win()
-        print 'You lose!'
-
-    def lose(self):
-        super(Human, self).win()
-        print 'You win!'
