@@ -1,5 +1,5 @@
 from ghost_trie import Ghost_Trie
-from ghost_exceptions import CallBluffException, HelpException
+from ghost_exceptions import CallBluffException, HelpException, OpponentCompletedWordException
 import random
 
 class Player:
@@ -11,7 +11,10 @@ class Player:
         self.name = name
 
     def get_letters(self):
-        return end_word[0:self.letter_count]
+        if self.letter_count == 0:
+            return 'No letters.'
+        letters = Player.end_word[0:self.letter_count]
+        return reduce(lambda x, y: x + y, letters)
 
     def win(self):
         print self.name + ' wins!'
@@ -33,11 +36,8 @@ class GhostBot(Player):
 
     def play_letter(self, word):
         move = self.play(word)
-        if move == None:
-            raise CallBluffException
-        else:
-            print 'I play...', move
-            return move.lower()
+        print 'I play...', move
+        return move.lower()
 
     # Returns True for a successful call and False otherwise.
     def call_bluff(self, opponent, word, definitive_dictionary):
@@ -52,15 +52,24 @@ class GhostBot(Player):
             return True
 
     def respond_to_bluff_call(self, word):
-        return self.dictionary.get_word_that_starts_with(word)
+        response = self.dictionary.get_word_that_starts_with(word)
+        if response == None:
+            print 'I can\'t think of a word!'
+        else:
+            print 'My word was:', response
+        return response
 
     def play(self, prefix):
         current_node = self.dictionary.get_prefix(prefix)
-        if not current_node or current_node.is_word:
-            return None
+        #print current_node.letter
+        #print 'Children', [child.letter for child in current_node.children]
+        if not current_node:
+            raise CallBluffException
+        if current_node.is_word:
+            raise OpponentCompletedWordException
         if not current_node.is_winning:
             # Should probably choose node more intelligently.
-            return current_node.children[random.randrange(len(current_node.children))].letter
+            return random.sample([child for child in current_node.children], 1)[0].letter
         else:
             return random.sample([child for child in current_node.children if not child.is_winning], 1)[0].letter
 

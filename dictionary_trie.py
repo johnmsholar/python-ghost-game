@@ -78,5 +78,5 @@ class Node:
                 result = result.union(child.get_all_words_recursive(word, MAX_RECURSIVE_DEPTH, ordered))
         else:
             for child in self.children:
-                result = result.union(child.print_all_words_recursive(word, MAX_RECURSIVE_DEPTH, ordered))
+                result = result.union(child.get_all_words_recursive(word, MAX_RECURSIVE_DEPTH, ordered))
         return result

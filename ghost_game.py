@@ -1,7 +1,7 @@
 from dictionary_trie import Dictionary_Trie
 from ghost_player import GhostBot, Human
 from time import time, sleep
-from ghost_exceptions import CallBluffException, HelpException, EndRoundException
+from ghost_exceptions import CallBluffException, HelpException, EndRoundException, OpponentCompletedWordException
 
 class Match():
     opponents = ['1. Timmy (Vocabulary: 1000 Most Common English Words)',
@@ -34,7 +34,8 @@ class Match():
         while self.human.letter_count < len(self.human.end_word) and self.ghost_bot.letter_count < len(self.ghost_bot.end_word):
             human_goes_first = (self.rounds_played % 2 == 0)
             self.active_round = Round(self.definitive_dictionary, self.human, self.ghost_bot, human_goes_first)
-            self.active_round.play_to_completion() # or something to that effect
+            self.active_round.play_to_completion()
+            self.rounds_played += 1
 
     def introduce(self):
         print 'Let\'s play GHOST!'
@@ -105,6 +106,9 @@ class Round():
         except HelpException:
             self.active_player.help()
             self.word += self.active_player.play_letter(self.word)
+        except OpponentCompletedWordException:
+            self.handle_completed_word_assertion()
+            raise EndRoundException
         # Evaluate if game is over???
         self.active_player, self.inactive_player = self.inactive_player, self.active_player # Swap active and inactive players
 
@@ -117,8 +121,20 @@ class Round():
             self.active_player.lose()
             self.inactive_player.win()
 
+    def handle_completed_word_assertion(self):
+        completed_word = self.definitive_dictionary.contains(self.word)
+        if completed_word:
+            self.active_player.win()
+            self.inactive_player.lose()
+        else:
+            self.active_player.lose()
+            self.inactive_player.win()
+
     def conclude(self):
         print 'This concludes the round.'
+        print 'Game status:'
+        print '\t' + self.player_1.name + ': ' + self.player_1.get_letters()
+        print '\t' + self.player_2.name + ': ' + self.player_2.get_letters()
 
 if __name__ == '__main__':
     Match()
