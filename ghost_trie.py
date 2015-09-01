@@ -35,7 +35,7 @@ class Ghost_Trie(Dictionary_Trie):
             return None
         else:
             active_node = self.get_prefix(prefix)
-            choices = active_node.get_all_words_recursive(prefix, MAX_RECURSIVE_DEPTH=15, ordered=False)
+            choices = active_node.get_all_words_recursive(prefix, ordered=False)
             if len(choices) == 0:
                 return None
             return random.sample(choices, 1)[0]

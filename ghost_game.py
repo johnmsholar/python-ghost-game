@@ -28,14 +28,23 @@ class Match():
     def __init__(self):
         self.introduce()
         self.definitive_dictionary = Dictionary_Trie('dictionary.txt')
-        self.create_player_character()
-        self.create_ghost_bot()
+        self.human_count = self.verify_number_of_humans_input()
+        if self.human_count == 0:
+            self.player_1 = self.create_ghost_bot()
+            self.player_2 = self.create_ghost_bot()
+        elif self.human_count == 1:
+            self.player_1 = self.create_human_player()
+            self.player_2 = self.create_ghost_bot()
+        elif self.human_count == 2:
+            self.player_1 = self.create_human_player()
+            self.player_2 = self.create_human_player()
         self.rounds_played = 0
-        while self.human.letter_count < len(self.human.end_word) and self.ghost_bot.letter_count < len(self.ghost_bot.end_word):
-            human_goes_first = (self.rounds_played % 2 == 0)
-            self.active_round = Round(self.definitive_dictionary, self.human, self.ghost_bot, human_goes_first)
+        while self.player_1.letter_count < len(self.player_1.end_word) and self.player_2.letter_count < len(self.player_2.end_word):
+            player_1_goes_first = (self.rounds_played % 2 == 0)
+            self.active_round = Round(self.definitive_dictionary, self.player_1, self.player_2, player_1_goes_first)
             self.active_round.play_to_completion()
             self.rounds_played += 1
+        self.conclude()
 
     def introduce(self):
         print 'Let\'s play GHOST!'
@@ -44,13 +53,19 @@ class Match():
         else:
             print 'Already a pro, huh? Let\'s play!'
 
+    def verify_number_of_humans_input(self):
+        number_of_players = None
+        while number_of_players not in ['0', '1', '2']:
+            number_of_players = raw_input('How many human players should this game have? (0, 1, 2)')
+        return int(number_of_players)
+
     def create_player_character(self):
         name = raw_input('But first... what\'s your name?\n')
-        self.human = Human(name)
-        print 'Hello there, ' + self.human.name + '! It\'s a pleasure to make your acquaintance.'
+        print 'Hello there, ' + name + '! It\'s a pleasure to make your acquaintance.'
+        return Human(name)
 
     def create_ghost_bot(self):
-        self.ghost_bot = GhostBot(self.dictionaries[self.select_opponent()], 'BOT')
+        return GhostBot(self.dictionaries[self.select_opponent()], 'BOT')
 
     def select_opponent(self):
         opponent_selection = ''
@@ -72,8 +87,16 @@ class Match():
             print 'I don\'t understand that input.'
             return False
 
-# TODO: Extend the round class to support two arbitrary players, rather than a human and a ghost_bot
-# I don't think I'll extend to support more than 2 players. It seems to spit in the face of the game.
+    def conclude(self):
+        if self.player_1.letter_count == len(self.player_1.end_word):
+            print 'Player 1 has accumulated:', self.player_1.get_letters()
+            print self.player_1.name, 'loses!'
+            print self.player_2.name, 'wins!'
+        else:
+            print 'Player 2 has accumulated:', self.player_2.get_letters()
+            print self.player_1.name, 'wins!'
+            print self.player_2.name, 'loses!'
+
 class Round():
     def __init__(self, definitive_dictionary, player_1, player_2, player_1_goes_first):
         self.word = ''

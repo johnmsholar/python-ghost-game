@@ -40,8 +40,8 @@ class Dictionary_Trie:
     def contains_prefix(self, prefix):
         return (self.get_prefix(prefix) != None)
 
-    def print_all_words(self, MAX_RECURSIVE_DEPTH=10, ordered=False):
-        self.root.print_all_words_recursive('', MAX_RECURSIVE_DEPTH, ordered)
+    def print_all_words(self, ordered=False):
+        self.root.print_all_words_recursive('', ordered)
 
  
 class Node:
@@ -66,17 +66,15 @@ class Node:
     def remove_child(self, node):
         self.children.remove(node)
 
-    def get_all_words_recursive(self, word, MAX_RECURSIVE_DEPTH, ordered=False):
+    def get_all_words_recursive(self, word, ordered=False):
         result = set()
-        if len(word) >= MAX_RECURSIVE_DEPTH:
-            return None
         word += self.letter
         if self.is_word:
             result.add(word)
         if ordered:
             for child in sorted([child for child in self.children]):
-                result = result.union(child.get_all_words_recursive(word, MAX_RECURSIVE_DEPTH, ordered))
+                result = result.union(child.get_all_words_recursive(word, ordered))
         else:
             for child in self.children:
-                result = result.union(child.get_all_words_recursive(word, MAX_RECURSIVE_DEPTH, ordered))
+                result = result.union(child.get_all_words_recursive(word, ordered))
         return result

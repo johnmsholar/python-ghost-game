@@ -3,6 +3,7 @@ from ghost_exceptions import CallBluffException, HelpException, OpponentComplete
 import random
 
 class Player:
+    alphabet = [chr(num) for num in range(ord('a'), ord('a') + 26)]
     end_word = ['G', 'H', 'O', 'S', 'T']
     actions = ['move', 'call_bluff', 'help', 'quit']
 
@@ -61,17 +62,19 @@ class GhostBot(Player):
 
     def play(self, prefix):
         current_node = self.dictionary.get_prefix(prefix)
-        #print current_node.letter
-        #print 'Children', [child.letter for child in current_node.children]
         if not current_node:
             raise CallBluffException
         if current_node.is_word:
+            print 'I assert that you\'ve completed a word!'
             raise OpponentCompletedWordException
         if not current_node.is_winning:
             # Should probably choose node more intelligently.
-            return random.sample([child for child in current_node.children], 1)[0].letter
+            possible_moves = [child for child in current_node.children]
         else:
-            return random.sample([child for child in current_node.children if not child.is_winning], 1)[0].letter
+            possible_moves = [child for child in current_node.children if not child.is_winning]
+        if len(possible_moves) == 0:
+            return random.sample(Player.alphabet, 1)[0]
+        return random.sample(possible_moves, 1)[0].letter #TODO: fix. This is sloppy.
 
     def knows_word(self, word):
         return self.dictionary.contains(word)
@@ -81,7 +84,9 @@ class Human(Player):
                     '1. Play a letter - enter a single letter to respond to your opponent\'s move. \n' + 
                     '2. Call Bluff - enter "call bluff" to assert that your opponent is not moving towards an English word. \n' + 
                     '\tIf your opponent cannot provide a suitable word, you win. If they can, you lose. \n' + 
-                    '3. Help - enter "help" to ask for help.')
+                    '3. Assert Completion - enter "assert complete" to assert that your opponent has completed a word. \n' +
+                    '\tIf the definitive dictionary contains the current word, you win. Otherwise, you lose.'
+                    '4. Help - enter "help" to ask for help.')
 
     def __init__(self, name='Holly'):
         Player.__init__(self, name)
@@ -90,7 +95,7 @@ class Human(Player):
     def play_letter(self, word):
         move = ''
         while not self._verify_letter(move):
-            move = raw_input('It\'s your move, ' + self.name + '! What letter will you play? ')
+            move = raw_input('It\'s your move, ' + self.name + '! What letter will you play? (or enter \'help\')')
         return move
 
     def _verify_letter(self, letter):
@@ -100,11 +105,13 @@ class Human(Player):
             raise HelpException(self.name + ' requested help.')
         if letter.lower() == 'call bluff':
             raise CallBluffException(self.name + ' is calling their opponent\'s bluff.')
+        if letter.lower() == 'assert complete':
+            raise OpponentCompletedWordException(self.name + 'asserts that their opponent has completed a word')
         if len(letter) > 1:
             print 'Enter a single letter.'
             return False
         try:
-            return (letter.lower() in [chr(num) for num in range(ord('a'), ord('a') + 26)])
+            return (letter.lower() in Player.alphabet)
         except AttributeError as error:
             print 'Invalid input. Enter a single letter.'
             return False
